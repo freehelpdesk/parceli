@@ -1,0 +1,22 @@
+[package]
+name = "parceli"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.dev.package."*"]
+opt-level = "z"
+
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+lto = true
+
+[dependencies]
+chrono = "0.4.24"
+clap = { version = "4.1.8", features = ["derive"] }
+directories = "4.0.1"
+reqwest = { version = "0.11.14", features = ["blocking", "json"] }
+serde = "1.0.156"
+serde_derive = { version = "1.0.156", features = ["deserialize_in_place"] }
+serde_json = { version = "1.0.94", features = ["alloc"] }
