@@ -1,21 +1,22 @@
 use chrono::{DateTime, Utc};
 use clap::Parser;
-use textwrap::Options;
-use std::{fs::File, io::BufReader};
-use std::io::{Write};
-use std::path::PathBuf;
 use serde_derive::{Deserialize, Serialize};
+use std::io::Write;
+use std::path::PathBuf;
+use std::{fs::File, io::BufReader};
+use textwrap::Options;
 
 #[derive(Serialize, Deserialize)]
 struct Config {
     key: String,
 }
 
-
 // Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(author = "freehelpdesk", version = "1.0.0", long_about = None)]
-#[command(about = "CLI implementation of a package/mail tracker for USPS/UPS/FedEx made in Rust using the parcel library and a bit of smarts.")]
+#[command(
+    about = "CLI implementation of a package/mail tracker for USPS/UPS/FedEx made in Rust using the parcel library and a bit of smarts."
+)]
 struct Args {
     // Name of the person to greet
     #[arg(last = true, help = "Parcel ID")]
@@ -71,17 +72,17 @@ fn main() {
                 Err(_) => panic!("somehow you managed to fuck everything up as always"),
             };
             file
-        },
+        }
     };
 
     if let Some(key) = &args.key {
         let config = Config {
-            key: key.to_string()
+            key: key.to_string(),
         };
 
         let body = match serde_json::to_string(&config) {
             Ok(body) => body,
-            Err(_) => panic!("Unable to convert config to string")
+            Err(_) => panic!("Unable to convert config to string"),
         };
 
         match file.write_all(body.as_bytes()) {
@@ -96,9 +97,7 @@ fn main() {
 
     let reader = BufReader::new(&mut file);
     let config: Config = match serde_json::from_reader(reader) {
-        Ok(config) => {
-            config
-        },
+        Ok(config) => config,
         Err(_) => {
             // Try to open it one more time
             let mut file = match File::open(path) {
@@ -111,7 +110,7 @@ fn main() {
                 Err(_) => panic!("Unable to parse config"),
             };
             config
-        },
+        }
     };
 
     if args.verbose {
@@ -119,7 +118,9 @@ fn main() {
     }
 
     let pg = parceli::new(&config.key, args.verbose);
-    let parcels = pg.track(args.parcel_id).expect("Unable to retrive any parcels");
+    let parcels = pg
+        .track(args.parcel_id)
+        .expect("Unable to retrive any parcels");
     for parcel in parcels {
         println!("Package {}", parcel.tracking_number.as_str());
         if parcel.courier_code.len() > 0 {
@@ -136,7 +137,12 @@ fn main() {
         if args.list {
             for event in parcel.events {
                 let options = Options::new(50).subsequent_indent("\t\t\t\t\t   ");
-                println!("\t\t {} | {}: {}", event.datetime.parse::<DateTime<Utc>>().unwrap(), event.location.as_str(), textwrap::fill(event.status.as_str(), options));
+                println!(
+                    "\t\t {} | {}: {}",
+                    event.datetime.parse::<DateTime<Utc>>().unwrap(),
+                    event.location.as_str(),
+                    textwrap::fill(event.status.as_str(), options)
+                );
             }
         }
     }

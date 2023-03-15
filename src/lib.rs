@@ -1,5 +1,5 @@
-use std::{collections::HashMap};
-use serde_json::{Value};
+use serde_json::Value;
+use std::collections::HashMap;
 
 pub struct Parceli {
     pub key: String,
@@ -23,7 +23,7 @@ pub struct Events {
 }
 
 pub fn new(key: &String, verbose: bool) -> Parceli {
-    Parceli { 
+    Parceli {
         key: key.clone(),
         verbose,
     }
@@ -57,7 +57,10 @@ impl Parceli {
     }
 
     fn uncuck_string(&self, str: String) -> String {
-        str.trim_start_matches('"').trim_end_matches('"').replace("null", "").to_string()
+        str.trim_start_matches('"')
+            .trim_end_matches('"')
+            .replace("null", "")
+            .to_string()
     }
 
     pub fn track(&self, ids: Vec<String>) -> Option<Vec<Parcel>> {
@@ -65,15 +68,15 @@ impl Parceli {
         for id in ids {
             let mut body = HashMap::new();
             body.insert("trackingNumber", &id);
-            
+
             let client = reqwest::blocking::Client::new();
-            let res = client.post("https://api.ship24.com/public/v1/tracking/search")
+            let res = client
+                .post("https://api.ship24.com/public/v1/tracking/search")
                 .json(&body)
                 .bearer_auth(self.key.to_string())
                 .header("Content-Type", "application/json; charset=utf-8")
                 .send()
                 .expect("Could not parse request");
-
 
             if self.verbose {
                 println!("api status: {}", res.status().as_u16());
@@ -100,22 +103,59 @@ impl Parceli {
             if let Some(len) = self.get_vec_len_by_path(&text, "data.trackings.0.events") {
                 for num in 0..len {
                     let event = Events {
-                        status: self.uncuck_string(self.get_value_by_path(&text, format!("data.trackings.0.events.{num}.status").as_str()).unwrap_or(Value::String(String::from(""))).to_string()),
-                        location: self.uncuck_string(self.get_value_by_path(&text, format!("data.trackings.0.events.{num}.location").as_str()).unwrap_or(Value::String(String::from(""))).to_string()),
-                        datetime: self.uncuck_string(self.get_value_by_path(&text, format!("data.trackings.0.events.{num}.datetime").as_str()).unwrap_or(Value::String(String::from(""))).to_string()),
+                        status: self.uncuck_string(
+                            self.get_value_by_path(
+                                &text,
+                                format!("data.trackings.0.events.{num}.status").as_str(),
+                            )
+                            .unwrap_or(Value::String(String::from("")))
+                            .to_string(),
+                        ),
+                        location: self.uncuck_string(
+                            self.get_value_by_path(
+                                &text,
+                                format!("data.trackings.0.events.{num}.location").as_str(),
+                            )
+                            .unwrap_or(Value::String(String::from("")))
+                            .to_string(),
+                        ),
+                        datetime: self.uncuck_string(
+                            self.get_value_by_path(
+                                &text,
+                                format!("data.trackings.0.events.{num}.datetime").as_str(),
+                            )
+                            .unwrap_or(Value::String(String::from("")))
+                            .to_string(),
+                        ),
                     };
                     events.push(event);
-                }   
+                }
             }
 
             let parcel = Parcel {
-                tracking_number: self.uncuck_string(self.get_value_by_path(&text, "data.trackings.0.events.0.trackingNumber").unwrap_or(Value::String(String::from(""))).to_string()),
-                courier_code: self.uncuck_string(self.get_value_by_path(&text, "data.trackings.0.events.0.courierCode").unwrap_or(Value::String(String::from(""))).to_string()),
-                city: self.uncuck_string(self.get_value_by_path(&text, "data.trackings.0.shipment.recipient.city").unwrap_or(Value::String(String::from(""))).to_string()),
-                location: self.uncuck_string(self.get_value_by_path(&text, "data.trackings.0.events.0.location").unwrap_or(Value::String(String::from(""))).to_string()),
-                events
+                tracking_number: self.uncuck_string(
+                    self.get_value_by_path(&text, "data.trackings.0.events.0.trackingNumber")
+                        .unwrap_or(Value::String(String::from("")))
+                        .to_string(),
+                ),
+                courier_code: self.uncuck_string(
+                    self.get_value_by_path(&text, "data.trackings.0.events.0.courierCode")
+                        .unwrap_or(Value::String(String::from("")))
+                        .to_string(),
+                ),
+                city: self.uncuck_string(
+                    self.get_value_by_path(&text, "data.trackings.0.shipment.recipient.city")
+                        .unwrap_or(Value::String(String::from("")))
+                        .to_string(),
+                ),
+                location: self.uncuck_string(
+                    self.get_value_by_path(&text, "data.trackings.0.events.0.location")
+                        .unwrap_or(Value::String(String::from("")))
+                        .to_string(),
+                ),
+                events,
             };
-            
+
             if self.verbose {
                 println!("got parcel with id {} from api", &id);
             }
