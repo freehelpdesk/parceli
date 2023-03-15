@@ -98,7 +98,19 @@ fn main() {
         Ok(config) => {
             config
         },
-        Err(_) => panic!("Neither a key was provided or a key in the config was found"),
+        Err(_) => {
+            // Try to open it one more time
+            let mut file = match File::open(path) {
+                Ok(f) => f,
+                Err(_) => panic!("Unable to re-open file"),
+            };
+            let reader = BufReader::new(&mut file);
+            let config: Config = match serde_json::from_reader(reader) {
+                Ok(config) => config,
+                Err(_) => panic!("Unable to parse config"),
+            };
+            config
+        },
     };
 
     if args.verbose {
