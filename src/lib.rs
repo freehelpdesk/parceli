@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap};
 use serde_json::{Value};
 
 pub struct Parceli {
@@ -78,6 +78,10 @@ impl Parceli {
             if self.verbose {
                 println!("api status: {}", res.status().as_u16());
                 println!("api headers: {:?}", res.headers());
+            }
+
+            if res.status().as_u16() != 200 || res.status().as_u16() != 201 {
+                panic!("could not fetch parcel, your key may be invalid");
             }
 
             let text = match res.text() {
