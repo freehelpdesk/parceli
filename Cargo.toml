@@ -12,6 +12,9 @@ opt-level = "z"
 strip = true  # Automatically strip symbols from the binary.
 lto = true
 
+[lib]
+src = "src/lib.rs"
+
 [dependencies]
 chrono = "0.4.24"
 clap = { version = "4.1.8", features = ["derive"] }
