@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use clap::Parser;
+use textwrap::Options;
 use std::{fs::File, io::BufReader};
 use std::io::{Write};
 use std::path::PathBuf;
@@ -129,10 +130,13 @@ fn main() {
             location = parcel.location.clone();
         }
         println!("\tLocation {}", location.as_str());
-        println!("\tStatus   {}", parcel.events[0].status.as_str());
+        if parcel.events.len() > 0 {
+            println!("\tStatus   {}", parcel.events[0].status.as_str());
+        }
         if args.list {
             for event in parcel.events {
-                println!("\t\t {} | {}: {}", event.datetime.parse::<DateTime<Utc>>().unwrap(), event.location.as_str(), event.status.as_str());
+                let options = Options::new(50).subsequent_indent("\t\t\t\t\t   ");
+                println!("\t\t {} | {}: {}", event.datetime.parse::<DateTime<Utc>>().unwrap(), event.location.as_str(), textwrap::fill(event.status.as_str(), options));
             }
         }
     }
