@@ -119,7 +119,7 @@ fn main() {
     }
 
     let pg = parceli::new(&config.key, args.verbose);
-    let parcels = pg.track(args.parcel_id);
+    let parcels = pg.track(args.parcel_id).expect("Unable to retrive any parcels");
     for parcel in parcels {
         println!("Package {}", parcel.tracking_number.as_str());
         if parcel.courier_code.len() > 0 {

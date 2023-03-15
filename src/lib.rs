@@ -60,11 +60,11 @@ impl Parceli {
         str.trim_start_matches('"').trim_end_matches('"').replace("null", "").to_string()
     }
 
-    pub fn track(&self, ids: Vec<String>) -> Vec<Parcel> {
+    pub fn track(&self, ids: Vec<String>) -> Option<Vec<Parcel>> {
         let mut parcels: Vec<Parcel> = Vec::new();
         for id in ids {
             let mut body = HashMap::new();
-            body.insert("trackingNumber", id);
+            body.insert("trackingNumber", &id);
             
             let client = reqwest::blocking::Client::new();
             let res = client.post("https://api.ship24.com/public/v1/tracking/search")
@@ -109,10 +109,15 @@ impl Parceli {
                 events
             };
             
-            // println!("{:?}", parcel);
+            if self.verbose {
+                println!("got parcel with id {} from api", &id);
+            }
 
             parcels.push(parcel);
         }
-        parcels
+        if parcels.len() == 0 {
+            return None;
+        }
+        Some(parcels)
     }
 }
