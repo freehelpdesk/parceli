@@ -77,7 +77,10 @@ impl Parceli {
 
             if self.verbose {
                 println!("api status: {}", res.status().as_u16());
-                println!("api headers: {:?}", res.headers());
+                println!("headers:");
+                for (k, v) in res.headers() {
+                    println!("\t{k}: {v:?}");
+                }
             }
 
             if res.status().as_u16() != 200 && res.status().as_u16() != 201 {
