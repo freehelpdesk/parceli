@@ -80,7 +80,7 @@ impl Parceli {
                 println!("api headers: {:?}", res.headers());
             }
 
-            if res.status().as_u16() != 200 || res.status().as_u16() != 201 {
+            if res.status().as_u16() != 200 && res.status().as_u16() != 201 {
                 panic!("could not fetch parcel, your key may be invalid");
             }
 
