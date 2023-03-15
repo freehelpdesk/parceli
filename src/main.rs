@@ -118,7 +118,7 @@ fn main() {
         println!("key: {}", config.key);
     }
 
-    let pg = parceli::new(&config.key);
+    let pg = parceli::new(&config.key, args.verbose);
     let parcels = pg.track(args.parcel_id);
     for parcel in parcels {
         println!("Package {}", parcel.tracking_number.as_str());

@@ -3,6 +3,7 @@ use serde_json::{Value};
 
 pub struct Parceli {
     pub key: String,
+    pub verbose: bool,
 }
 
 #[derive(Debug)]
@@ -21,9 +22,10 @@ pub struct Events {
     pub datetime: String,
 }
 
-pub fn new(key: &String) -> Parceli {
+pub fn new(key: &String, verbose: bool) -> Parceli {
     Parceli { 
         key: key.clone(),
+        verbose,
     }
 }
 
@@ -69,15 +71,14 @@ impl Parceli {
                 .json(&body)
                 .bearer_auth(self.key.to_string())
                 .header("Content-Type", "application/json; charset=utf-8")
-                .send();
+                .send()
+                .expect("Could not parse request");
 
-            let res = match res {
-                Ok(res) => res,
-                Err(_) => {
-                    println!("Could not parse request");
-                    break;
-                }
-            };
+
+            if self.verbose {
+                println!("api status: {}", res.status().as_u16());
+                println!("api headers: {:?}", res.headers());
+            }
 
             let text = match res.text() {
                 Ok(text) => text,
