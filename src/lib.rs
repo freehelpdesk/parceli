@@ -90,13 +90,7 @@ impl Parceli {
                 panic!("could not fetch parcel, your key may be invalid");
             }
 
-            let text = match res.text() {
-                Ok(text) => text,
-                Err(_) => {
-                    println!("Could not get text from response");
-                    break;
-                }
-            };
+            let text = res.text().expect("could not get text from response");
 
             let mut events: Vec<Events> = Vec::new();
 

@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use clap::Parser;
+use colored::Colorize;
 use serde_derive::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::PathBuf;
@@ -39,40 +40,24 @@ fn main() {
         base_dirs.executable_dir();
     }
 
-    let base_dirs = match directories::BaseDirs::new() {
-        Some(dirs) => dirs,
-        None => {
-            panic!("Could not create new base directory object");
-        }
-    };
+    let base_dirs =
+        directories::BaseDirs::new().expect("Could not create new base directory object");
 
-    let path = match base_dirs.home_dir().to_str() {
-        Some(path) => path,
-        None => {
-            panic!("at this disco");
-        }
-    };
+    let path = base_dirs
+        .home_dir()
+        .to_str()
+        .expect("could not find home irectory");
 
     let mut path = PathBuf::from(path);
     let file_name = ".parceli";
     path.push(file_name);
 
-    let path = match path.to_str() {
-        Some(path) => path,
-        None => {
-            panic!("at this disco");
-        }
-    };
+    let path = path.to_str().expect("could not convert path to string");
 
     let mut file = match File::open(path) {
         Ok(f) => f,
-        Err(_) => {
-            let file = match File::create(path) {
-                Ok(file) => file,
-                Err(_) => panic!("somehow you managed to fuck everything up as always"),
-            };
-            file
-        }
+        Err(_) => File::create(path)
+            .expect(format!("unable to create {} after two failed attemps", path).as_str()),
     };
 
     if let Some(key) = &args.key {
@@ -80,14 +65,10 @@ fn main() {
             key: key.to_string(),
         };
 
-        let body = match serde_json::to_string(&config) {
-            Ok(body) => body,
-            Err(_) => panic!("Unable to convert config to string"),
-        };
+        let body = serde_json::to_string(&config).expect("unable to convert config to string");
 
-        match file.write_all(body.as_bytes()) {
-            Ok(_) => println!("Wrote to config"),
-            Err(_) => (),
+        if file.write_all(body.as_bytes()).is_ok() && args.verbose {
+            println!("wrote to config")
         }
     }
 
@@ -100,15 +81,9 @@ fn main() {
         Ok(config) => config,
         Err(_) => {
             // Try to open it one more time
-            let mut file = match File::open(path) {
-                Ok(f) => f,
-                Err(_) => panic!("Unable to re-open file"),
-            };
+            let mut file = File::open(path).expect("unable to re-open file");
             let reader = BufReader::new(&mut file);
-            let config: Config = match serde_json::from_reader(reader) {
-                Ok(config) => config,
-                Err(_) => panic!("Unable to parse config"),
-            };
+            let config: Config = serde_json::from_reader(reader).expect("unable to parse config");
             config
         }
     };
@@ -122,17 +97,29 @@ fn main() {
         .track(args.parcel_id)
         .expect("Unable to retrive any parcels");
     for parcel in parcels {
-        println!("Package {}", parcel.tracking_number.as_str());
+        println!(
+            "{} {}",
+            "Package".green().bold(),
+            parcel.tracking_number.as_str().underline()
+        );
         if parcel.courier_code.len() > 0 {
-            println!("\tCourier  {}", parcel.courier_code.as_str());
+            println!(
+                "\t{}  {}",
+                "Courier".underline().bold(),
+                parcel.courier_code.as_str()
+            );
         }
         let mut location = parcel.city.clone();
         if location.len() < 1 {
             location = parcel.location.clone();
         }
-        println!("\tLocation {}", location.as_str());
+        println!("\t{} {}", "Location".underline().bold(), location.as_str());
         if parcel.events.len() > 0 {
-            println!("\tStatus   {}", parcel.events[0].status.as_str());
+            println!(
+                "\t{}   {}",
+                "Status".underline().bold(),
+                parcel.events[0].status.as_str()
+            );
         }
         if args.list {
             for event in parcel.events {
@@ -140,7 +127,7 @@ fn main() {
                 println!(
                     "\t\t {} | {}: {}",
                     event.datetime.parse::<DateTime<Utc>>().unwrap(),
-                    event.location.as_str(),
+                    event.location.as_str().underline(),
                     textwrap::fill(event.status.as_str(), options)
                 );
             }
