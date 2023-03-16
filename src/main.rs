@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use clap::Parser;
 use colored::Colorize;
 use serde_derive::{Deserialize, Serialize};
-use std::io::{Write, Read};
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::{fs::File, io::BufReader};
 use textwrap::Options;
@@ -59,7 +59,7 @@ fn main() {
         Err(_) => {
             args.key.clone().expect("must add a key using -k");
             File::create(path)
-            .expect(format!("unable to create {} after two failed attemps", path).as_str())
+                .expect(format!("unable to create {} after two failed attemps", path).as_str())
         }
     };
 
@@ -87,7 +87,9 @@ fn main() {
             let mut file = File::open(path).expect("unable to re-open file");
             let mut reader = BufReader::new(&mut file);
             let mut contents = String::new();
-            reader.read_to_string(&mut contents).expect("unable to read config buffer");
+            reader
+                .read_to_string(&mut contents)
+                .expect("unable to read config buffer");
             let config: Config = toml::from_str(&contents).expect("unable to parse config");
             config
         }
