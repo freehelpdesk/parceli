@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use clap::Parser;
 use colored::Colorize;
 use serde_derive::{Deserialize, Serialize};
-use std::io::Write;
+use std::io::{Write, Read};
 use std::path::PathBuf;
 use std::{fs::File, io::BufReader};
 use textwrap::Options;
@@ -56,8 +56,11 @@ fn main() {
 
     let mut file = match File::open(path) {
         Ok(f) => f,
-        Err(_) => File::create(path)
-            .expect(format!("unable to create {} after two failed attemps", path).as_str()),
+        Err(_) => {
+            args.key.clone().expect("must add a key using -k");
+            File::create(path)
+            .expect(format!("unable to create {} after two failed attemps", path).as_str())
+        }
     };
 
     if let Some(key) = &args.key {
@@ -65,7 +68,7 @@ fn main() {
             key: key.to_string(),
         };
 
-        let body = serde_json::to_string(&config).expect("unable to convert config to string");
+        let body = toml::to_string(&config).expect("unable to convert config to string");
 
         if file.write_all(body.as_bytes()).is_ok() && args.verbose {
             println!("wrote to config")
@@ -82,8 +85,10 @@ fn main() {
         Err(_) => {
             // Try to open it one more time
             let mut file = File::open(path).expect("unable to re-open file");
-            let reader = BufReader::new(&mut file);
-            let config: Config = serde_json::from_reader(reader).expect("unable to parse config");
+            let mut reader = BufReader::new(&mut file);
+            let mut contents = String::new();
+            reader.read_to_string(&mut contents).expect("unable to read config buffer");
+            let config: Config = toml::from_str(&contents).expect("unable to parse config");
             config
         }
     };
@@ -122,6 +127,7 @@ fn main() {
             );
         }
         if args.list {
+            println!("\t{}", "History".blue().bold().underline());
             for event in parcel.events {
                 let options = Options::new(50).subsequent_indent("\t\t\t\t\t   ");
                 println!(

@@ -24,7 +24,7 @@ pub struct Events {
 
 pub fn new(key: &String, verbose: bool) -> Parceli {
     Parceli {
-        key: key.clone(),
+        key: key.clone().replace(char::is_whitespace, ""),
         verbose,
     }
 }
