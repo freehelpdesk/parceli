@@ -75,6 +75,10 @@ fn main() {
         }
     }
 
+    if args.parcel_id.len() == 0 {
+        panic!("please add your parcels using -- <yourparcelids...>, note the space");
+    }
+
     if args.verbose {
         println!("config: {}", path);
     }
