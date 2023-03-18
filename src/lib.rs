@@ -56,13 +56,6 @@ impl Parceli {
         Some(current.as_array().unwrap().len())
     }
 
-    fn uncuck_string(&self, str: String) -> String {
-        str.trim_start_matches('"')
-            .trim_end_matches('"')
-            .replace("null", "")
-            .to_string()
-    }
-
     pub fn track(&self, ids: Vec<String>) -> Option<Vec<Parcel>> {
         let mut parcels: Vec<Parcel> = Vec::new();
         for id in ids {
@@ -97,56 +90,67 @@ impl Parceli {
             if let Some(len) = self.get_vec_len_by_path(&text, "data.trackings.0.events") {
                 for num in 0..len {
                     let event = Events {
-                        status: self.uncuck_string(
-                            self.get_value_by_path(
+                        status: self
+                            .get_value_by_path(
                                 &text,
                                 format!("data.trackings.0.events.{num}.status").as_str(),
                             )
                             .unwrap_or(Value::String(String::from("")))
+                            .as_str()
+                            .unwrap_or("")
                             .to_string(),
-                        ),
-                        location: self.uncuck_string(
-                            self.get_value_by_path(
+                        location: self
+                            .get_value_by_path(
                                 &text,
                                 format!("data.trackings.0.events.{num}.location").as_str(),
                             )
                             .unwrap_or(Value::String(String::from("")))
+                            .as_str()
+                            .unwrap_or("")
                             .to_string(),
-                        ),
-                        datetime: self.uncuck_string(
-                            self.get_value_by_path(
+                        datetime: self
+                            .get_value_by_path(
                                 &text,
                                 format!("data.trackings.0.events.{num}.datetime").as_str(),
                             )
                             .unwrap_or(Value::String(String::from("")))
+                            .as_str()
+                            .unwrap_or("")
                             .to_string(),
-                        ),
                     };
                     events.push(event);
                 }
             }
 
             let parcel = Parcel {
-                tracking_number: self.uncuck_string(
-                    self.get_value_by_path(&text, "data.trackings.0.events.0.trackingNumber")
-                        .unwrap_or(Value::String(String::from("")))
-                        .to_string(),
-                ),
-                courier_code: self.uncuck_string(
-                    self.get_value_by_path(&text, "data.trackings.0.events.0.courierCode")
-                        .unwrap_or(Value::String(String::from("")))
-                        .to_string(),
-                ),
-                city: self.uncuck_string(
-                    self.get_value_by_path(&text, "data.trackings.0.shipment.recipient.city")
-                        .unwrap_or(Value::String(String::from("")))
-                        .to_string(),
-                ),
-                location: self.uncuck_string(
-                    self.get_value_by_path(&text, "data.trackings.0.events.0.location")
-                        .unwrap_or(Value::String(String::from("")))
-                        .to_string(),
-                ),
+                tracking_number: self
+                    .get_value_by_path(&text, "data.trackings.0.events.0.trackingNumber")
+                    .unwrap_or(Value::String(String::from("")))
+                    .as_str()
+                    .unwrap_or("")
+                    .to_string(),
+
+                courier_code: self
+                    .get_value_by_path(&text, "data.trackings.0.events.0.courierCode")
+                    .unwrap_or(Value::String(String::from("")))
+                    .as_str()
+                    .unwrap_or("")
+                    .to_string(),
+
+                city: self
+                    .get_value_by_path(&text, "data.trackings.0.shipment.recipient.city")
+                    .unwrap_or(Value::String(String::from("")))
+                    .as_str()
+                    .unwrap_or("")
+                    .to_string(),
+
+                location: self
+                    .get_value_by_path(&text, "data.trackings.0.events.0.location")
+                    .unwrap_or(Value::String(String::from("")))
+                    .as_str()
+                    .unwrap_or("")
+                    .to_string(),
+
                 events,
             };
 

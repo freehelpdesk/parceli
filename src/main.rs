@@ -58,8 +58,7 @@ fn main() {
         Ok(f) => f,
         Err(_) => {
             args.key.clone().expect("must add a key using -k");
-            File::create(path)
-                .expect(format!("unable to create {}", path).as_str())
+            File::create(path).expect(format!("unable to create {}", path).as_str())
         }
     };
 
