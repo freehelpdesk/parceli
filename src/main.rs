@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, Local};
 use clap::Parser;
 use colored::Colorize;
 use serde_derive::{Deserialize, Serialize};
@@ -144,7 +144,7 @@ fn main() {
                 let options = Options::new(50).subsequent_indent("\t\t\t\t\t   ");
                 println!(
                     "\t\t {} | {}: {}",
-                    event.datetime.parse::<DateTime<Utc>>().unwrap(),
+                    event.datetime.parse::<DateTime<Local>>().unwrap().format("%m/%d/%Y %I:%M %P"),
                     event.location.as_str().underline(),
                     textwrap::fill(event.status.as_str(), options)
                 );
