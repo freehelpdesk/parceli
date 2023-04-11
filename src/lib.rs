@@ -1,11 +1,15 @@
 use serde_json::Value;
 use std::collections::HashMap;
 
+
+/// Main library API
 pub struct Parceli {
     pub key: String,
     pub verbose: bool,
 }
 
+/// The parcel data type is used to store useful information about a package.
+/// TODO: There needs to be options everywhere instead of empty strings
 #[derive(Debug)]
 pub struct Parcel {
     pub tracking_number: String,
@@ -15,6 +19,7 @@ pub struct Parcel {
     pub events: Vec<Events>,
 }
 
+/// A sub component of Parcel, used for package history
 #[derive(Debug)]
 pub struct Events {
     pub status: String,
@@ -22,6 +27,7 @@ pub struct Events {
     pub datetime: String,
 }
 
+/// Creates a new instace of Parceli
 pub fn new(key: &String, verbose: bool) -> Parceli {
     Parceli {
         key: key.clone().replace(char::is_whitespace, ""),
@@ -29,7 +35,9 @@ pub fn new(key: &String, verbose: bool) -> Parceli {
     }
 }
 
+/// Implementation for Parceli
 impl Parceli {
+    /// Takes in a json string, and gets an optional serde_json::Value back
     fn get_value_by_path(&self, json_str: &str, path: &str) -> Option<Value> {
         let value: Value = serde_json::from_str(json_str).ok()?;
         let mut current = &value;
@@ -43,6 +51,7 @@ impl Parceli {
         Some(current.clone())
     }
 
+    /// Takes in a json string, and gets an optional usize back for a Vec
     fn get_vec_len_by_path(&self, json_str: &str, path: &str) -> Option<usize> {
         let value: Value = serde_json::from_str(json_str).ok().unwrap();
         let mut current = &value;
@@ -56,6 +65,7 @@ impl Parceli {
         Some(current.as_array().unwrap().len())
     }
 
+    // Takes in a list of package ids, and returns the parcels data
     pub fn track(&self, ids: Vec<String>) -> Option<Vec<Parcel>> {
         let mut parcels: Vec<Parcel> = Vec::new();
         for id in ids {

@@ -7,6 +7,14 @@ use std::path::PathBuf;
 use std::{fs::File, io::BufReader};
 use textwrap::Options;
 
+#[macro_export]
+macro_rules! exit_with_message {
+    ($code:expr, $($arg:tt)*) => {{
+        eprintln!($($arg)*);  // print message to standard error
+        std::process::exit($code);  // exit with status code
+    }};
+}
+
 #[derive(Serialize, Deserialize)]
 struct Config {
     key: String,
@@ -20,7 +28,6 @@ struct Config {
 )]
 struct Args {
     // Name of the person to greet
-    #[arg(last = true, help = "Parcel ID")]
     parcel_id: Vec<String>,
 
     #[arg(short, long, help = "Ship 24 api key")]
@@ -75,7 +82,7 @@ fn main() {
     }
 
     if args.parcel_id.len() == 0 {
-        panic!("please add your parcels using -- <yourparcelids...>, note the space");
+        exit_with_message!(-1, "please add your parcels");
     }
 
     if args.verbose {
